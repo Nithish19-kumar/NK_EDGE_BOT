@@ -1,5 +1,0 @@
-feedparser
-requests
-schedule
-yfinance
-pandas
