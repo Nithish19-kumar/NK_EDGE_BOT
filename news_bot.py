@@ -6,7 +6,6 @@ import requests
 import time
 import yfinance as yf
 from datetime import datetime
-from transformers import pipeline
 import os
 
 SEEN_FILE = "seen.json"
@@ -14,7 +13,24 @@ SEEN_FILE = "seen.json"
 TOKEN   = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
-sentiment_model = pipeline("text-classification", model="ProsusAI/finbert")
+POSITIVE_WORDS = [
+    'profit','gain','rise','surge','jump','high','up','growth',
+    'rally','strong','beat','record','buy','upgrade','positive',
+    'boom','win','success','dividend'
+]
+NEGATIVE_WORDS = [
+    'loss','fall','drop','crash','low','down','weak','decline',
+    'sell','downgrade','negative','bust','fail','cut','risk',
+    'warning','concern','trouble','debt'
+]
+
+def get_sentiment(headline):
+    h = headline.lower()
+    pos = sum(1 for w in POSITIVE_WORDS if w in h)
+    neg = sum(1 for w in NEGATIVE_WORDS if w in h)
+    if pos > neg:   return "POSITIVE", "🟢"
+    elif neg > pos: return "NEGATIVE", "🔴"
+    else:           return "NEUTRAL",  "⚪"
 
 RSS_FEEDS = [
     "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
@@ -68,11 +84,11 @@ def get_category(headline):
     elif any(x in h for x in ['nifty','sensex','market']): return "📈 MARKET"
     else: return "⚡ NEWS"
 
-def format_message(headline, label, score):
-    emoji = "🟢" if label=="POSITIVE" else "🔴" if label=="NEGATIVE" else "⚪"
+def format_message(headline, label, emoji):
     time_now = datetime.now().strftime('%I:%M %p | %d %b %Y')
-    return (f"{get_category(headline)}\n━━━━━━━━━━━━━━━━\n📰 {headline}\n"
-            f"━━━━━━━━━━━━━━━━\n{emoji} {label} ({score:.0%})\n🕐 {time_now}\n📡 NK Edge Bot")
+    return (f"{get_category(headline)}\n━━━━━━━━━━━━━━━━\n"
+            f"📰 {headline}\n━━━━━━━━━━━━━━━━\n"
+            f"{emoji} {label}\n🕐 {time_now}\n📡 NK Edge Bot")
 
 def fetch_news():
     articles = []
@@ -96,8 +112,8 @@ def check_new_news():
         h = get_hash(headline)
         if h not in seen_headlines:
             seen_headlines.add(h)
-            result = sentiment_model(headline[:512])[0]
-            msg = format_message(headline, result['label'].upper(), result['score'])
+            label, emoji = get_sentiment(headline)
+            msg = format_message(headline, label, emoji)
             send_telegram(msg)
             time.sleep(2)
             new_count += 1
