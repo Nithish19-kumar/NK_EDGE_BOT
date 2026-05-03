@@ -5,25 +5,18 @@ import feedparser
 import requests
 import time
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import os
-from datetime import timezone, timedelta
 
 SEEN_FILE = "seen.json"
-
 TOKEN   = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+IST = timezone(timedelta(hours=5, minutes=30))
 
-POSITIVE_WORDS = [
-    'profit','gain','rise','surge','jump','high','up','growth',
-    'rally','strong','beat','record','buy','upgrade','positive',
-    'boom','win','success','dividend'
-]
-NEGATIVE_WORDS = [
-    'loss','fall','drop','crash','low','down','weak','decline',
-    'sell','downgrade','negative','bust','fail','cut','risk',
-    'warning','concern','trouble','debt'
-]
+POSITIVE_WORDS = ['profit','gain','rise','surge','jump','high','up','growth',
+    'rally','strong','beat','record','buy','upgrade','positive','boom','win','success','dividend']
+NEGATIVE_WORDS = ['loss','fall','drop','crash','low','down','weak','decline',
+    'sell','downgrade','negative','bust','fail','cut','risk','warning','concern','trouble','debt']
 
 def get_sentiment(headline):
     h = headline.lower()
@@ -86,8 +79,7 @@ def get_category(headline):
     else: return "⚡ NEWS"
 
 def format_message(headline, label, emoji):
-    IST = timezone(timedelta(hours=5, minutes=30))
-time_now = datetime.now(IST).strftime('%I:%M %p | %d %b %Y')
+    time_now = datetime.now(IST).strftime('%I:%M %p | %d %b %Y')
     return (f"{get_category(headline)}\n━━━━━━━━━━━━━━━━\n"
             f"📰 {headline}\n━━━━━━━━━━━━━━━━\n"
             f"{emoji} {label}\n🕐 {time_now}\n📡 NK Edge Bot")
@@ -108,7 +100,7 @@ seen_headlines = load_seen()
 
 def check_new_news():
     global seen_headlines
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Checking news...")
+    print(f"[{datetime.now(IST).strftime('%H:%M:%S')}] Checking news...")
     new_count = 0
     for headline in fetch_news():
         h = get_hash(headline)
