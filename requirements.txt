@@ -1,0 +1,7 @@
+feedparser
+requests
+schedule
+yfinance
+transformers
+torch
+pandas
