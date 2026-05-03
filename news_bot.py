@@ -8,7 +8,7 @@ import yfinance as yf
 from datetime import datetime, timezone, timedelta
 import os
 
-SEEN_FILE = "seen.json"
+SEEN_FILE = "/app/data/seen.json"
 TOKEN   = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 IST = timezone(timedelta(hours=5, minutes=30))
