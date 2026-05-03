@@ -7,6 +7,7 @@ import time
 import yfinance as yf
 from datetime import datetime
 import os
+from datetime import timezone, timedelta
 
 SEEN_FILE = "seen.json"
 
@@ -85,7 +86,8 @@ def get_category(headline):
     else: return "⚡ NEWS"
 
 def format_message(headline, label, emoji):
-    time_now = datetime.now().strftime('%I:%M %p | %d %b %Y')
+    IST = timezone(timedelta(hours=5, minutes=30))
+time_now = datetime.now(IST).strftime('%I:%M %p | %d %b %Y')
     return (f"{get_category(headline)}\n━━━━━━━━━━━━━━━━\n"
             f"📰 {headline}\n━━━━━━━━━━━━━━━━\n"
             f"{emoji} {label}\n🕐 {time_now}\n📡 NK Edge Bot")
